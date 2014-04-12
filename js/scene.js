@@ -39,4 +39,18 @@ scene.add(pointLight);
 
 scene.add(sphere);
 
+var bgMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2, 0),
+    new THREE.MeshPhongMaterial({ color: 0xCC0000 })
+    );
+bgMesh.material.depthTest = false;
+bgMesh.material.depthWrite = false;
+var bgCam = new THREE.Camera();
+var bgScene = new THREE.Scene();
+bgScene.add(bgCam);
+bgScene.add(bgMesh);
+
+renderer.autoClear = false;
+renderer.clear();
+renderer.render(bgScene, bgCam);
 renderer.render(scene, camera);
