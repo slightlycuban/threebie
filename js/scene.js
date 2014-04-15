@@ -40,17 +40,18 @@ scene.add(pointLight);
 scene.add(sphere);
 
 var bgMesh = new THREE.Mesh(
-    new THREE.PlaneGeometry(2, 2, 0),
-    new THREE.MeshPhongMaterial({ color: 0xCC0000 })
+    new THREE.CubeGeometry(500,500,500),
+    new THREE.MeshBasicMaterial({ color: 0x0000FF, depthWrite: false })
     );
-bgMesh.material.depthTest = false;
-bgMesh.material.depthWrite = false;
-var bgCam = new THREE.Camera();
+bgMesh.flipSided = true;
+var bgCam = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 var bgScene = new THREE.Scene();
 bgScene.add(bgCam);
 bgScene.add(bgMesh);
 
-renderer.autoClear = false;
-renderer.clear();
-renderer.render(bgScene, bgCam);
-renderer.render(scene, camera);
+var render = function() {
+  renderer.clear();
+  renderer.render(bgScene, bgCam);
+  renderer.render(scene, camera);
+}
+render();
