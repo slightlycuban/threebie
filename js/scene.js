@@ -8,7 +8,12 @@ var VIEW_ANGLE = 45,
 
 var $container = $('#container');
 
-var renderer = new THREE.WebGLRenderer();
+var renderer;
+if (Detector.webgl) {
+  renderer = new THREE.WebGLRenderer();
+} else {
+  renderer = new THREE.CanvasRenderer();
+}
 var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 
 var scene = new THREE.Scene();
@@ -39,19 +44,20 @@ scene.add(pointLight);
 
 scene.add(sphere);
 
-var bgMesh = new THREE.Mesh(
+var skybox = new THREE.Mesh(
     new THREE.CubeGeometry(500,500,500),
     new THREE.MeshBasicMaterial({ color: 0x0000FF, depthWrite: false })
     );
-bgMesh.flipSided = true;
+skybox.flipSided = true;
 var bgCam = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 var bgScene = new THREE.Scene();
 bgScene.add(bgCam);
-bgScene.add(bgMesh);
+//bgScene.add(skybox);
+scene.add(skybox);
 
 var render = function() {
-  renderer.clear();
-  renderer.render(bgScene, bgCam);
+  // renderer.render(bgScene, bgCam);
   renderer.render(scene, camera);
+  return true;
 }
 render();
