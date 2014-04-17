@@ -44,9 +44,21 @@ scene.add(pointLight);
 
 scene.add(sphere);
 
+var imagePrefix = "img/dawnmountain-";
+var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
+var imageSuffix = ".png";
+
+var materialArray = [];
+for (var i = 0; i < 6; i++) {
+  materialArray.push( new THREE.MeshBasicMaterial({
+    map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+    side: THREE.BackSide }));
+}
+var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+
 var skybox = new THREE.Mesh(
     new THREE.CubeGeometry(500,500,500),
-    new THREE.MeshBasicMaterial({ color: 0x0000FF, depthWrite: false })
+    skyMaterial
     );
 skybox.flipSided = true;
 var bgCam = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
