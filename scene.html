@@ -2,89 +2,87 @@
 <html>
   <head>
     <meta charset="utf-8">
-		<title>THREE.js</title>
-		<script src='js/three.min.js'></script>
+    <title>THREE.js</title>
+    <script src='js/jquery.min.js'></script>
+    <script src='js/three.min.js'></script>
     <script src="js/Detector.js"></script>
-		<script src='js/jquery.min.js'></script>
-	</head>
-	<body>
-		<div id='container'></div>
-	</body>
-		<script>
-var WIDTH = 400,
+  </head>
+  <body>
+    <div id='container'></div>
+  </body>
+  <script>
+      var WIDTH = 400,
     HEIGHT = 300;
 
-var VIEW_ANGLE = 45,
+    var VIEW_ANGLE = 45,
     ASPECT = WIDTH / HEIGHT,
     NEAR = 0.1,
     FAR = 10000;
 
-var $container = $('#container');
+    var $container = $('#container');
 
-var renderer;
-if (Detector.webgl) {
-  renderer = new THREE.WebGLRenderer();
-} else {
-  renderer = new THREE.CanvasRenderer();
-}
-var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+    var renderer;
+    if (Detector.webgl) {
+      renderer = new THREE.WebGLRenderer();
+    } else {
+      renderer = new THREE.CanvasRenderer();
+    }
+    var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 
-var scene = new THREE.Scene();
+    var scene = new THREE.Scene();
 
-camera.position.z = 300;
+    camera.position.z = 300;
 
-renderer.setSize(WIDTH, HEIGHT);
+    renderer.setSize(WIDTH, HEIGHT);
 
-$container.append(renderer.domElement);
+    $container.append(renderer.domElement);
 
-var sphereMaterial = new THREE.MeshLambertMaterial({
-  color: 0xCC0000
-});
+    var sphereMaterial = new THREE.MeshLambertMaterial({
+      color: 0xCC0000
+    });
 
-var radius = 50, segments = 16, rings = 16;
+    var radius = 50, segments = 16, rings = 16;
 
-var sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(radius, segments, rings),
-    sphereMaterial);
+    var sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(radius, segments, rings),
+        sphereMaterial);
 
-var pointLight = new THREE.PointLight( 0xFFFFFF );
+    var pointLight = new THREE.PointLight( 0xFFFFFF );
 
-pointLight.position.x = 10;
-pointLight.position.y = 50;
-pointLight.position.x = 130;
+    pointLight.position.x = 10;
+    pointLight.position.y = 50;
+    pointLight.position.x = 130;
 
-scene.add(pointLight);
+    scene.add(pointLight);
 
-scene.add(sphere);
+    scene.add(sphere);
 
-var imagePrefix = "img/dawnmountain-";
-var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
-var imageSuffix = ".png";
+    var imagePrefix = "img/dawnmountain-";
+    var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
+    var imageSuffix = ".png";
+    
+    var drawScene = function() {
+      console.log("Rendering after img load");
+      renderer.render(scene, camera);
+    }
 
-var materialArray = [];
-for (var i = 0; i < 6; i++) {
-  materialArray.push( new THREE.MeshBasicMaterial({
-    map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
-    side: THREE.BackSide }));
-}
-var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+    var materialArray = [];
+    for (var i = 0; i < 6; i++) {
+      materialArray.push( new THREE.MeshBasicMaterial({
+        map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix, {}, drawScene, function() {console.log("Image failed to load");} ),
+        side: THREE.BackSide }));
+    }
+    var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
 
-var skybox = new THREE.Mesh(
-    new THREE.CubeGeometry(500,500,500),
-    skyMaterial
-    );
-skybox.flipSided = true;
-var bgCam = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-var bgScene = new THREE.Scene();
-bgScene.add(bgCam);
-//bgScene.add(skybox);
-scene.add(skybox);
-
-var render = function() {
-  // renderer.render(bgScene, bgCam);
-  renderer.render(scene, camera);
-  return true;
-}
-render();
-		</script>
+    var skybox = new THREE.Mesh(
+        new THREE.CubeGeometry(500,500,500),
+        skyMaterial
+        );
+    skybox.flipSided = true;
+    var bgCam = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+    var bgScene = new THREE.Scene();
+    bgScene.add(bgCam);
+    //bgScene.add(skybox);
+    scene.add(skybox);
+  </script>
 </html>
