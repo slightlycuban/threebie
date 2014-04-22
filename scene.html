@@ -11,13 +11,9 @@
     <div id='container'></div>
   </body>
   <script>
-      var WIDTH = 400,
-    HEIGHT = 300;
+    var WIDTH = 400, HEIGHT = 300;
 
-    var VIEW_ANGLE = 45,
-    ASPECT = WIDTH / HEIGHT,
-    NEAR = 0.1,
-    FAR = 10000;
+    var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 10000;
 
     var $container = $('#container');
 
@@ -60,16 +56,11 @@
     var imagePrefix = "img/dawnmountain-";
     var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
     var imageSuffix = ".png";
-    
-    var drawScene = function() {
-      console.log("Rendering after img load");
-      renderer.render(scene, camera);
-    }
 
     var materialArray = [];
     for (var i = 0; i < 6; i++) {
       materialArray.push( new THREE.MeshBasicMaterial({
-        map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix, {}, drawScene, function() {console.log("Image failed to load");} ),
+        map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
         side: THREE.BackSide }));
     }
     var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
@@ -82,7 +73,23 @@
     var bgCam = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
     var bgScene = new THREE.Scene();
     bgScene.add(bgCam);
-    //bgScene.add(skybox);
     scene.add(skybox);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      drawScene();
+    }
+    
+    var drawScene = function() {
+      camera.lookAt(scene.position);
+
+      var timer = new Date().getTime() * 0.0005;
+      camera.position.x = Math.floor(Math.cos(timer) * 200);
+      camera.position.z = Math.floor(Math.sin(timer) * 200);
+
+      renderer.render(scene, camera);
+    }
+
+    animate();
   </script>
 </html>
