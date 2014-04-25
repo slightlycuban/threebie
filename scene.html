@@ -18,6 +18,9 @@
     var scene;
 
     function animate() {
+      // this line contains the animation magic
+      // and will call animate when the next frame is available
+      // see http://mdn.io/window.requestAnimationFrame
       requestAnimationFrame(animate);
 
       camera.lookAt(scene.position);
@@ -36,12 +39,13 @@
         renderer = new THREE.CanvasRenderer();
       }
 
+      // TODO: replace constants with screen size
       var WIDTH = 400, HEIGHT = 300;
       var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 10000;
 
-      camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
       scene = new THREE.Scene();
     
+      camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
       camera.position.z = 300;
 
       renderer.setSize(WIDTH, HEIGHT);
@@ -68,6 +72,11 @@
 
       scene.add(sphere);
 
+      /**
+       * Skybox stuff
+       * combine the 6 image (prefix + x/y/x + pos/neg)
+       * into a materialArray, which is the inside of our skybox
+       */
       var imagePrefix = "img/dawnmountain-";
       var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
       var imageSuffix = ".png";
