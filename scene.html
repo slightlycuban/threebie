@@ -19,10 +19,7 @@
 
     function animate() {
       requestAnimationFrame(animate);
-      drawScene();
-    }
-    
-    var drawScene = function() {
+
       camera.lookAt(scene.position);
 
       var timer = new Date().getTime() * 0.0005;
