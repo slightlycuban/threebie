@@ -6,7 +6,7 @@
     <script src='js/jquery.min.js'></script>
     <script src='js/three.min.js'></script>
     <script src="js/Detector.js"></script>
-    <script src="js/keyboard.js"></script>
+    <script src="js/OrbitControls.js"></script>
   </head>
   <body>
     <div id='container'></div>
@@ -16,6 +16,7 @@
     var renderer;
     var camera;
     var scene;
+    var controls;
 
     function animate() {
       // this line contains the animation magic
@@ -25,10 +26,12 @@
 
       camera.lookAt(scene.position);
 
-      var timer = new Date().getTime() * 0.0005;
-      camera.position.x = Math.floor(Math.cos(timer) * 200);
-      camera.position.z = Math.floor(Math.sin(timer) * 200);
+      controls.update();
 
+      render();
+    }
+
+    function render() {
       renderer.render(scene, camera);
     }
     
@@ -95,6 +98,10 @@
           );
       skybox.flipSided = true;
       scene.add(skybox);
+
+      // Set up mouse controls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.addEventListener('change', render);
     }
     
     init();
