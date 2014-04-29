@@ -7,6 +7,9 @@
     <script src='js/three.min.js'></script>
     <script src="js/Detector.js"></script>
     <script src="js/OrbitControls.js"></script>
+    <style>
+      * { margin: 0; padding: 0; }
+    </style>
   </head>
   <body>
     <div id='container'></div>
@@ -36,15 +39,15 @@
     }
     
     function init() {
+      var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
+      var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 20000;
+
       if (Detector.webgl) {
         renderer = new THREE.WebGLRenderer();
       } else {
         renderer = new THREE.CanvasRenderer();
       }
-
-      // TODO: replace constants with screen size
-      var WIDTH = 400, HEIGHT = 300;
-      var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 10000;
+      renderer.setSize(WIDTH, HEIGHT);
 
       scene = new THREE.Scene();
     
