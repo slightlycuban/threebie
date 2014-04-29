@@ -7,6 +7,7 @@
     <script src='js/three.min.js'></script>
     <script src="js/Detector.js"></script>
     <script src="js/OrbitControls.js"></script>
+    <script src="js/THREEx.WindowResize.js"></script>
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
       * { margin: 0; padding: 0; }
@@ -58,6 +59,9 @@
       renderer.setSize(WIDTH, HEIGHT);
 
       $container.append(renderer.domElement);
+
+      // Use helper WindowResize for this bit
+      THREEx.WindowResize(renderer, camera);
 
       var sphereMaterial = new THREE.MeshLambertMaterial({
         color: 0xCC0000
