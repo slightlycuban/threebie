@@ -26,6 +26,9 @@
     var camera;
     var scene;
     var controls;
+    var projector;
+    var mouse = { x: 0, y: 0 };
+    var targetList = [];
 
     function animate() {
       // this line contains the animation magic
@@ -76,6 +79,7 @@
       var sphere = new THREE.Mesh(
           new THREE.SphereGeometry(radius, segments, rings),
           sphereMaterial);
+      targetList.push(sphere);
 
       var pointLight = new THREE.PointLight( 0xFFFFFF );
 
@@ -114,6 +118,29 @@
       // Set up mouse controls
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.addEventListener('change', render);
+
+      // Set up for handling mouse cliques
+      projector = new THREE.Projector();
+
+      document.addEventListener('mousedown', onDocumentMouseDown, false);
+    }
+
+    /*
+     * totally borrowed this from:
+     * http://stemkoski.github.io/Three.js/Mouse-Click.html
+     */
+    function onDocumentMouseDown(event) {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+      console.log("Click at " + mouse.x + "," + mouse.y);
+      var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
+      projector.unprojectVector(vector, camera);
+      var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+
+      var intersections = ray.intersectObjects(targetList);
+      if (intersections.length > 0) {
+        console.log("Clicked face " + intersections[0].faceIndex);
+      }
     }
     
     init();
