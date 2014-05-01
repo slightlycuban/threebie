@@ -105,7 +105,7 @@
       var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
 
       var skybox = new THREE.Mesh(
-          new THREE.CubeGeometry(500,500,500),
+          new THREE.BoxGeometry(10000,10000,10000),
           skyMaterial
           );
       skybox.flipSided = true;
