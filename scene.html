@@ -139,7 +139,10 @@
 
       var intersections = ray.intersectObjects(targetList);
       if (intersections.length > 0) {
-        console.log("Clicked face " + intersections[0].faceIndex);
+        var vertexId = intersections[0].face.a;
+        var thing = intersections[0].object;
+        var vertex = thing.geometry.vertices[vertexId];
+        console.log("Clicked near vertex " + vertex);
       }
     }
     
