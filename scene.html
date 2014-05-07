@@ -140,12 +140,16 @@
       var intersections = ray.intersectObjects(targetList);
       if (intersections.length > 0) {
         var vertexId = intersections[0].face.a;
-        var thing = intersections[0].object;
-        var vertex = thing.geometry.vertices[vertexId];
-        console.log("Clicked near vertex " + vertex);
+        var geo = intersections[0].object.geometry;
+        var vertex = geo.vertices[vertexId];
+        vertex.y += 10.0;
+        vertex.x += 10.0;
+        vertex.z += 10.0;
+        console.log("Moved vertex: " + vertexId);
+        geo.verticesNeedUpdate = true;
       }
     }
-    
+
     init();
     animate();
   </script>
