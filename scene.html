@@ -29,6 +29,7 @@
     var projector;
     var mouse = { x: 0, y: 0 };
     var targetList = [];
+    var sphere, sphereMirror;
 
     function animate() {
       // this line contains the animation magic
@@ -44,6 +45,9 @@
     }
 
     function render() {
+      sphere.visible = false;
+      sphereMirror.updateCubeMap(renderer, scene);
+      sphere.visible = true;
       renderer.render(scene, camera);
     }
     
@@ -70,15 +74,17 @@
       // Use helper WindowResize for this bit
       THREEx.WindowResize(renderer, camera);
 
-      var sphereMaterial = new THREE.MeshLambertMaterial({
-        color: 0xCC0000
-      });
+      sphereMirror = new THREE.CubeCamera(0.1, 5000, 512);
+      scene.add(sphereMirror);
+      var sphereMirrorMaterial = new THREE.MeshBasicMaterial({ envMap: sphereMirror.renderTarget });
 
       var radius = 50, segments = 16, rings = 16;
-
-      var sphere = new THREE.Mesh(
+      sphere = new THREE.Mesh(
           new THREE.SphereGeometry(radius, segments, rings),
-          sphereMaterial);
+          sphereMirrorMaterial);
+      sphereMirror.position.set(0, 0, 0);
+      sphereMirror.position = sphere.position;
+
       targetList.push(sphere);
 
       var pointLight = new THREE.PointLight( 0xFFFFFF );
