@@ -148,9 +148,12 @@
         var vertexId = intersections[0].face.a;
         var geo = intersections[0].object.geometry;
         var vertex = geo.vertices[vertexId];
-        vertex.y += 10.0;
-        vertex.x += 10.0;
-        vertex.z += 10.0;
+        var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
+        var veclen = vec.length();
+        vec.setLength(veclen * 1.1);
+        vertex.x = vec.x;
+        vertex.y = vec.y;
+        vertex.z = vec.z;
         console.log("Moved vertex: " + vertexId);
         geo.verticesNeedUpdate = true;
       }
