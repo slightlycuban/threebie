@@ -29,8 +29,43 @@
     var projector;
     var mouse = { x: 0, y: 0 };
     var targetList = [];
+    var vertexList = [];
+    var geo;
+
+    /*
+     * Borrowed from http://jsdo.it/parroty/2Rix
+     * to make a wave
+     */
     var amountX = 50;
     var amountY = 50;
+    var waveSpeed = 0.2;
+    var waveHeight = 200;
+    var dampSpeed = 0.005;
+    var initialFactor = 1.0;
+    var factor = initialFactor;
+    var rotation = 0;
+    var rotationSpeed = 0.1;
+    var separation = 25;
+
+    function initialPoint(vertex) {
+      var x = (vertex.x / separation) * waveSpeed;
+      var y = (vertex.y / separation) * waveSpeed;
+      return waveHeight *
+        (Math.cos(x * x + y * x) / Math.sqrt(x * x + y * y + 0.25));
+    }
+
+    function updatePoint(vertex) {
+      vertex.z = initialPoint(vertex) * Math.cos(rotation) * factor;
+      geo.verticesNeedUpdate = true;
+    }
+
+    function calculateNextParm() {
+      rotation += rotationSpeed;
+      if (factor > 0) {
+        factor -= dampSpeed;
+      }
+    }
+
 
     function animate() {
       // this line contains the animation magic
@@ -46,7 +81,11 @@
     }
 
     function render() {
+      for (i = 0; i < vertexList.length; i++) {
+        updatePoint(vertexList[i])
+      }
       renderer.render(scene, camera);
+      calculateNextParm();
     }
     
     function init() {
@@ -80,8 +119,10 @@
       var width = separation * amountX;
       var height = separation * amountY;
 
+      geo = new THREE.PlaneGeometry(width, height, amountX, amountY);
+
       var plane = new THREE.Mesh(
-          new THREE.PlaneGeometry(width, height, amountX, amountY),
+          geo,
           planeMaterial);
       plane.position.y -= 15;
       plane.rotation.x = Math.PI / 2;
@@ -149,6 +190,8 @@
         var thing = intersections[0].object;
         var vertex = thing.geometry.vertices[vertexId];
         console.log("Clicked near vertex " + vertex);
+        vertexList.push(vertex);
+        factor = initialFactor;
       }
     }
     
