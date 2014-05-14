@@ -33,6 +33,21 @@
     var geo;
 
     /*
+     * Borrowed from http://bit.ly/1jehGDZ
+     * and from http://bit.ly/1nGXUTn
+     */
+    var buffer1, buffer2;
+    function initPositions() {
+      buffer1 = [];
+      buffer2 = [];
+
+      for (var i = 0, l = amountX * amountY + amountX * 2; i < l; i++) {
+        buffer1[i] = 0;
+        buffer2[i] = 0;
+      }
+    }
+
+    /*
      * Borrowed from http://jsdo.it/parroty/2Rix
      * to make a wave
      */
