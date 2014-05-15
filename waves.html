@@ -46,13 +46,28 @@
         buffer2[i] = 0;
       }
     }
+    
+    function ripple(intersect) {
+      var point = intersect.point;
+      var x = Math.floor(point.x / amountX);
+      var y = Math.floor(point.y / amountX);
+
+      buffer1[x + (y * amountY) + amountX] = 10;
+
+      for (var i = amountX, l = amountX * amountY + amountX; i < l; i++) {
+        buffer2[ i ] = ( ( buffer1[ i - 1 ] + buffer1[ i + 1 ] + buffer1[ i - res ] + buffer1[ i + res ] ) / 2 ) - buffer2[ i ];
+        buffer1[ i ] += ( buffer2[ i ] - buffer1[ i ] ) * 0.25;
+      }
+      temp = buffer1;
+      buffer1 = buffer2;
+      buffer2 = temp;
+    }
 
     /*
      * Borrowed from http://jsdo.it/parroty/2Rix
      * to make a wave
      */
-    var amountX = 50;
-    var amountY = 50;
+    var amountX = amountY = 50;
     var waveSpeed = 0.2;
     var waveHeight = 200;
     var dampSpeed = 0.005;
