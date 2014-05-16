@@ -63,6 +63,12 @@
       buffer2 = temp;
     }
 
+    function updateVertices(geometry) {
+      for (int i = 0, l = amountX * amountY; i < l; i++) {
+        geometry.verticies[i].y = buffer2[i + amountX] * 10;
+      }
+    }
+
     /*
      * Borrowed from http://jsdo.it/parroty/2Rix
      * to make a wave
