@@ -55,7 +55,7 @@
       buffer1[x + (y * amountY) + amountX] = 10;
 
       for (var i = amountX, l = amountX * amountY + amountX; i < l; i++) {
-        buffer2[ i ] = ( ( buffer1[ i - 1 ] + buffer1[ i + 1 ] + buffer1[ i - res ] + buffer1[ i + res ] ) / 2 ) - buffer2[ i ];
+        buffer2[ i ] = ( ( buffer1[ i - 1 ] + buffer1[ i + 1 ] + buffer1[ i - amountX ] + buffer1[ i + amountY ] ) / 2 ) - buffer2[ i ];
         buffer1[ i ] += ( buffer2[ i ] - buffer1[ i ] ) * 0.25;
       }
       temp = buffer1;
@@ -64,8 +64,8 @@
     }
 
     function updateVertices(geometry) {
-      for (int i = 0, l = amountX * amountY; i < l; i++) {
-        geometry.verticies[i].y = buffer2[i + amountX] * 10;
+      for (var i = 0, l = amountX * amountY; i < l; i++) {
+        geometry.vertices[i].y = buffer2[i + amountX] * 10;
       }
     }
 
@@ -205,6 +205,7 @@
       // Set up for handling mouse cliques
       projector = new THREE.Projector();
 
+      initPositions();
       document.addEventListener('mousedown', onDocumentMouseDown, false);
     }
 
@@ -222,12 +223,8 @@
 
       var intersections = ray.intersectObjects(targetList);
       if (intersections.length > 0) {
-        var vertexId = intersections[0].face.a;
-        var thing = intersections[0].object;
-        var vertex = thing.geometry.vertices[vertexId];
-        console.log("Clicked near vertex " + vertex);
-        vertexList.push(vertex);
-        factor = initialFactor;
+        ripple(intersections[0]);
+        updateVertices(intersections[0].object.geometry);
       }
     }
     
