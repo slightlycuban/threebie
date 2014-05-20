@@ -31,6 +31,7 @@
     var targetList = [];
     var vertexList = [];
     var geo;
+    var intersect;
 
     /*
      * Borrowed from http://bit.ly/1jehGDZ
@@ -121,7 +122,9 @@
         updatePoint(vertexList[i])
       }
       renderer.render(scene, camera);
-      calculateNextParm();
+      ripple(intersect);
+      updateVertices(geo);
+      geo.verticesNeedUpdate = true;
     }
     
     function init() {
@@ -223,8 +226,7 @@
 
       var intersections = ray.intersectObjects(targetList);
       if (intersections.length > 0) {
-        ripple(intersections[0]);
-        updateVertices(intersections[0].object.geometry);
+        intersect = intersections[0];
       }
     }
     
