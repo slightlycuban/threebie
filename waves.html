@@ -42,21 +42,22 @@
       buffer1 = [];
       buffer2 = [];
 
-      for (var i = 0, l = amountX * amountY + amountX * 2; i < l; i++) {
+      for (var i = 0, l = res * res + res * 2; i < l; i++) {
         buffer1[i] = 0;
         buffer2[i] = 0;
       }
     }
     
     function ripple(intersect) {
-      var point = intersect.point;
-      var x = Math.floor(point.x / amountX);
-      var y = Math.floor(point.y / amountX);
+      if (typeof intersect == "undefined") return; //quiet, console
+      var face = intersect.face.a;
+      var x = face % res;
+      var y = Math.floor(face / res);
 
-      buffer1[x + (y * amountY) + amountX] = 10;
+      buffer1[x + (y * res) + res] = 10;
 
-      for (var i = amountX, l = amountX * amountY + amountX; i < l; i++) {
-        buffer2[ i ] = ( ( buffer1[ i - 1 ] + buffer1[ i + 1 ] + buffer1[ i - amountX ] + buffer1[ i + amountY ] ) / 2 ) - buffer2[ i ];
+      for (var i = res, l = res * res + res; i < l; i++) {
+        buffer2[ i ] = ( ( buffer1[ i - 1 ] + buffer1[ i + 1 ] + buffer1[ i - res ] + buffer1[ i + res ] ) / 2 ) - buffer2[ i ];
         buffer1[ i ] += ( buffer2[ i ] - buffer1[ i ] ) * 0.25;
       }
       temp = buffer1;
@@ -65,8 +66,8 @@
     }
 
     function updateVertices(geometry) {
-      for (var i = 0, l = amountX * amountY; i < l; i++) {
-        geometry.vertices[i].y = buffer2[i + amountX] * 10;
+      for (var i = 0, l = res * res; i < l; i++) {
+        geometry.vertices[i].z = buffer2[i + res] * 10;
       }
     }
 
@@ -74,7 +75,7 @@
      * Borrowed from http://jsdo.it/parroty/2Rix
      * to make a wave
      */
-    var amountX = amountY = 50;
+    var res = 50;
     var waveSpeed = 0.2;
     var waveHeight = 200;
     var dampSpeed = 0.005;
@@ -155,10 +156,10 @@
         side: THREE.DoubleSide
       });
 
-      var width = separation * amountX;
-      var height = separation * amountY;
+      var width = separation * res;
+      var height = separation * res;
 
-      geo = new THREE.PlaneGeometry(width, height, amountX, amountY);
+      geo = new THREE.PlaneGeometry(width, height, res, res);
 
       var plane = new THREE.Mesh(
           geo,
