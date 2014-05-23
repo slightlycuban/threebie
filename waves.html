@@ -44,23 +44,29 @@
       buffer1 = [];
       buffer2 = [];
 
+      // add 2 * res to our buffers, since we are using a 1D array
+      // and  use +/-res to "wrap around" the first/last row
       for (var i = 0, l = res * res + res * 2; i < l; i++) {
-        buffer1[i] = 0;
-        buffer2[i] = 0;
+        buffer1[i] = buffer2[i] = 0;
       }
     }
     
     function ripple(intersect) {
       if (typeof intersect == "undefined") return; //quiet, console
-      var face = intersect.face.a;
-      var x = face % res;
-      var y = Math.floor(face / res);
+      var vertex = intersect.face.a;
+      var x = vertex % res;
+      var y = Math.floor(vertex / res);
 
       buffer1[x + (y * res) + res] = 10;
 
       for (var i = res, l = res * res + res; i < l; i++) {
-        buffer2[ i ] = ( ( buffer1[ i - 1 ] + buffer1[ i + 1 ] + buffer1[ i - res ] + buffer1[ i + res ] ) / 2 ) - buffer2[ i ];
-        buffer1[ i ] += ( buffer2[ i ] - buffer1[ i ] ) * 0.25;
+        buffer2[i] = (
+            (buffer1[i - 1]
+              + buffer1[i + 1]
+              + buffer1[i - res]
+              + buffer1[i + res])
+            / 2) - buffer2[i];
+        buffer1[i] += (buffer2[i] - buffer1[i]) * 0.25;
       }
       temp = buffer1;
       buffer1 = buffer2;
