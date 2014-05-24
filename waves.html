@@ -44,9 +44,8 @@
       buffer1 = [];
       buffer2 = [];
 
-      // add 2 * res to our buffers, since we are using a 1D array
-      // and  use +/-res to "wrap around" the first/last row
-      for (var i = 0, l = res * res + res * 2; i < l; i++) {
+      // make l = (res ** 2 ) + 1 just to give a little buffer
+      for (var i = 0, l = res * res + 1; i < l; i++) {
         buffer1[i] = buffer2[i] = 0;
       }
     }
@@ -59,14 +58,19 @@
 
       buffer1[x + (y * res) + res] = 10;
 
-      for (var i = res, l = res * res + res; i < l; i++) {
+      for (var i = 0, l = res * res; i < l; i++) {
+        // let's try making things wrap around
+        var left = (i % res) == 0 ? i - 1 + res : i - 1;
+        var right = ((i + 1) % res) == 0 ? i + 1 - res : i + 1;
+        var up = (i) < res ? i - res + l : i - res;
+        var down = (i) > (l - res) ? (i % res) + res : i + res;
         buffer2[i] = (
-            (buffer1[i - 1]
-              + buffer1[i + 1]
-              + buffer1[i - res]
-              + buffer1[i + res])
+            (buffer1[left]
+              + buffer1[right]
+              + buffer1[up]
+              + buffer1[down])
             / 2) - buffer2[i];
-        buffer1[i] += (buffer2[i] - buffer1[i]) * 0.25;
+        buffer1[i] += (buffer2[i] - buffer1[i]) * 0.5;
       }
       temp = buffer1;
       buffer1 = buffer2;
