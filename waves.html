@@ -51,12 +51,13 @@
     }
     
     function ripple(intersect) {
-      if (typeof intersect == "undefined") return; //quiet, console
-      var vertex = intersect.face.a;
-      var x = vertex % res;
-      var y = Math.floor(vertex / res);
+      if (typeof intersect != "undefined") {
+        var vertex = intersect.face.a;
+        var x = vertex % res;
+        var y = Math.floor(vertex / res);
 
-      buffer1[x + (y * res) + res] = 10;
+        buffer1[x + (y * res)] = 2;
+      }
 
       for (var i = 0, l = res * res; i < l; i++) {
         // let's try making things wrap around
@@ -71,15 +72,16 @@
               + buffer1[down])
             / 2) - buffer2[i];
         buffer1[i] += (buffer2[i] - buffer1[i]) * 0.5;
+        buffer1[i] *= 0.9;
       }
-      temp = buffer1;
+      var temp = buffer1;
       buffer1 = buffer2;
       buffer2 = temp;
     }
 
     function updateVertices(geometry) {
-      for (var i = 0, l = res * res; i < l; i++) {
-        geometry.vertices[i].z = buffer2[i + res] * 10;
+      for (var i = 0, l = geometry.vertices.length; i < l; i++) {
+        geometry.vertices[i].z = buffer2[i] * 10;
       }
     }
 
@@ -139,7 +141,7 @@
       var width = separation * res;
       var height = separation * res;
 
-      geo = new THREE.PlaneGeometry(width, height, res, res);
+      geo = new THREE.PlaneGeometry(width, height, res - 1, res);
 
       var plane = new THREE.Mesh(
           geo,
