@@ -55,7 +55,7 @@
         var x = vertex % res;
         var y = Math.floor(vertex / res);
 
-        buffer1[x + (y * res)] = 2;
+        buffer1[x + (y * res)] += 10;
       }
 
       for (var i = 0, l = res * res; i < l; i++) {
@@ -71,7 +71,7 @@
               + buffer1[down])
             / 2) - buffer2[i];
         buffer1[i] += (buffer2[i] - buffer1[i]) * 0.5;
-        buffer1[i] *= 0.9;
+        buffer1[i] *= 0.85;
       }
       var temp = buffer1;
       buffer1 = buffer2;
