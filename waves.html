@@ -29,7 +29,6 @@
     var projector;
     var mouse = { x: 0, y: 0 };
     var targetList = [];
-    var vertexList = [];
     var geo;
     var intersect;
 
@@ -101,9 +100,6 @@
     }
 
     function render() {
-      for (i = 0; i < vertexList.length; i++) {
-        updatePoint(vertexList[i])
-      }
       renderer.render(scene, camera);
       ripple(intersect);
       updateVertices(geo);
