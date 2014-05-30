@@ -30,6 +30,62 @@
     var mouse = { x: 0, y: 0 };
     var targetList = [];
     var sphere, sphereMirror;
+    var geo;
+    var intersect;
+
+    /*
+     * Borrowed from http://bit.ly/1jehGDZ
+     * and from http://bit.ly/1nGXUTn
+     */
+    var buffer1, buffer2;
+    var res = 50;
+    var separation = 25;
+    function initPositions() {
+      buffer1 = [];
+      buffer2 = [];
+
+      // make l = (res ** 2 ) + 1 just to give a little buffer
+      for (var i = 0, l = res * res + 1; i < l; i++) {
+        buffer1[i] = buffer2[i] = 0;
+      }
+    }
+    
+    function ripple(intersect) {
+      if (typeof intersect != "undefined") {
+        var vertex = intersect.face.a;
+        var x = vertex % res;
+        var y = Math.floor(vertex / res);
+
+        buffer1[x + (y * res)] += 10;
+      }
+
+      for (var i = 0, l = res * res; i < l; i++) {
+        // let's try making things wrap around
+        var left = (i % res) == 0 ? i - 1 + res : i - 1;
+        var right = ((i + 1) % res) == 0 ? i + 1 - res : i + 1;
+        var up = (i) < res ? i - res + l : i - res;
+        var down = (i) > (l - res) ? (i % res) + res : i + res;
+        buffer2[i] = (
+            (buffer1[left]
+              + buffer1[right]
+              + buffer1[up]
+              + buffer1[down])
+            / 2) - buffer2[i];
+        buffer1[i] += (buffer2[i] - buffer1[i]) * 0.5;
+        buffer1[i] *= 0.85;
+      }
+      var temp = buffer1;
+      buffer1 = buffer2;
+      buffer2 = temp;
+    }
+
+    function updateVertices(geometry) {
+      for (var i = 0, l = geometry.vertices.length; i < l; i++) {
+        geometry.vertices[i].z = buffer2[i] * 10;
+      }
+    }
+
+
 
     function animate() {
       // this line contains the animation magic
@@ -49,6 +105,9 @@
       sphereMirror.updateCubeMap(renderer, scene);
       sphere.visible = true;
       renderer.render(scene, camera);
+      ripple(intersect);
+      updateVertices(geo);
+      geo.verticesNeedUpdate = true;
     }
     
     function init() {
@@ -77,6 +136,9 @@
       sphereMirror = new THREE.CubeCamera(0.1, 5000, 512);
       scene.add(sphereMirror);
       var sphereMirrorMaterial = new THREE.MeshBasicMaterial({ envMap: sphereMirror.renderTarget });
+
+      var width = separation * res;
+      var height = separation * res;
 
       var radius = 50;
       sphere = new THREE.Mesh(
@@ -128,6 +190,7 @@
       // Set up for handling mouse cliques
       projector = new THREE.Projector();
 
+      initPositions();
       document.addEventListener('mousedown', onDocumentMouseDown, false);
     }
 
@@ -145,20 +208,10 @@
 
       var intersections = ray.intersectObjects(targetList);
       if (intersections.length > 0) {
-        var vertexId = intersections[0].face.a;
-        var geo = intersections[0].object.geometry;
-        var vertex = geo.vertices[vertexId];
-        var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
-        var veclen = vec.length();
-        vec.setLength(veclen * 1.1);
-        vertex.x = vec.x;
-        vertex.y = vec.y;
-        vertex.z = vec.z;
-        console.log("Moved vertex: " + vertexId);
-        geo.verticesNeedUpdate = true;
+        intersect = intersections[0];
       }
     }
-
+    
     init();
     animate();
   </script>
