@@ -137,12 +137,9 @@
       scene.add(sphereMirror);
       var sphereMirrorMaterial = new THREE.MeshBasicMaterial({ envMap: sphereMirror.renderTarget });
 
-      var width = separation * res;
-      var height = separation * res;
-
-      var radius = 50;
+      var radius = 50, segments = res, rings = res;
       sphere = new THREE.Mesh(
-          new THREE.IcosahedronGeometry(radius, 2),
+          new THREE.SphereGeometry(radius, segments, rings),
           sphereMirrorMaterial);
       sphereMirror.position.set(0, 0, 0);
       sphereMirror.position = sphere.position;
