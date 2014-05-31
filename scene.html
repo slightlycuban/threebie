@@ -30,7 +30,7 @@
     var mouse = { x: 0, y: 0 };
     var targetList = [];
     var sphere, sphereMirror;
-    var geo;
+    var radius = 50;
     var intersect;
 
     /*
@@ -38,7 +38,7 @@
      * and from http://bit.ly/1nGXUTn
      */
     var buffer1, buffer2;
-    var res = 50;
+    var res = 25;
     var separation = 25;
     function initPositions() {
       buffer1 = [];
@@ -81,8 +81,14 @@
 
     function updateVertices(geometry) {
       for (var i = 0, l = geometry.vertices.length; i < l; i++) {
-        geometry.vertices[i].z = buffer2[i] * 10;
+        var vertex = geometry.vertices[i];
+        var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
+        vec.setLength(buffer2[i] + radius);
+        vertex.x = vec.x;
+        vertex.y = vec.y;
+        vertex.z = vec.z;
       }
+      geometry.verticesNeedUpdate = true;
     }
 
 
@@ -106,8 +112,7 @@
       sphere.visible = true;
       renderer.render(scene, camera);
       ripple(intersect);
-      updateVertices(geo);
-      geo.verticesNeedUpdate = true;
+      updateVertices(sphere.geometry);
     }
     
     function init() {
@@ -137,7 +142,7 @@
       scene.add(sphereMirror);
       var sphereMirrorMaterial = new THREE.MeshBasicMaterial({ envMap: sphereMirror.renderTarget });
 
-      var radius = 50, segments = res, rings = res;
+      var segments = res, rings = res;
       sphere = new THREE.Mesh(
           new THREE.SphereGeometry(radius, segments, rings),
           sphereMirrorMaterial);
@@ -198,7 +203,6 @@
     function onDocumentMouseDown(event) {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-      console.log("Click at " + mouse.x + "," + mouse.y);
       var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
       projector.unprojectVector(vector, camera);
       var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
