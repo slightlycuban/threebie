@@ -24,8 +24,6 @@ export function createStage($container) {
   var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
   camera.position.z = 300;
 
-  renderer.setSize(WIDTH, HEIGHT);
-
   $container.append(renderer.domElement);
 
   // Use helper WindowResize for this bit
