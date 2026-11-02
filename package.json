@@ -4,8 +4,10 @@
   "description": "THREE.js experiments: a rippling mirror sphere",
   "scripts": {
     "serve": "node tests/serve.mjs",
-    "test": "playwright test --project=smoke",
-    "test:update": "playwright test --project=smoke --update-snapshots",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --test \"tests/unit/*.test.mjs\"",
+    "test:e2e": "playwright test --project=smoke",
+    "test:e2e:update": "playwright test --project=smoke --update-snapshots",
     "record": "playwright test --project=record"
   },
   "devDependencies": {

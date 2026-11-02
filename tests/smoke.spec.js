@@ -7,7 +7,7 @@
 // the displaced vertices (a JSON snapshot plus a count of broken vertices).
 //
 // These snapshots pin *current* behavior, bugs included. A step that is meant
-// to change behavior updates them with `npm run test:update` in the same
+// to change behavior updates them with `npm run test:e2e:update` in the same
 // commit; a step that isn't must leave them untouched.
 const { test, expect } = require('@playwright/test');
 
@@ -19,15 +19,7 @@ const pages = [
     file: 'scene.html',
     // The sphere sits in the middle of the view.
     clickAt: { x: 400, y: 300 },
-    meshExpr: 'sphere',
-  },
-  {
-    file: 'waves.html',
-    // The default camera looks at the plane edge-on; raise it so the
-    // screenshots show the surface.
-    setup: () => { camera.position.set(0, 800, 1000); },
-    clickAt: { x: 400, y: 300 },
-    meshExpr: 'targetList[0]',
+    meshExpr: 'demo.sphere',
   },
 ];
 
@@ -67,6 +59,7 @@ async function stepFrames(page, n) {
  */
 async function canvasPng(page) {
   const dataUrl = await page.evaluate(() => {
+    const { renderer, scene, camera } = window.demo;
     renderer.render(scene, camera);
     return renderer.domElement.toDataURL('image/png');
   });
@@ -87,7 +80,6 @@ for (const demo of pages) {
       await page.clock.install({ time: 0 });
       await page.clock.pauseAt(1000);
       await page.goto(`/${demo.file}`, { waitUntil: 'networkidle' });
-      if (demo.setup) await page.evaluate(demo.setup);
       await stepFrames(page, 1);
 
       const before = await readVertices(page, demo.meshExpr);

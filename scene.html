@@ -20,78 +20,38 @@
   <body>
     <div id='container'></div>
   </body>
-  <script>
+  <script type="module">
+    import { createRipple } from './src/ripple.mjs';
+    import { createStage, addSkybox, addOrbitControls } from './src/scene-setup.mjs';
+    import { onClick } from './src/picking.mjs';
+    import { createMirrorSphere } from './src/mirror-sphere.mjs';
+
     var $container = $('#container');
     var renderer;
     var camera;
     var scene;
     var controls;
-    var projector;
-    var mouse = { x: 0, y: 0 };
     var targetList = [];
-    var sphere, sphereMirror;
+    var mirrorSphere, sphere;
     var radius = 50;
     var intersect;
 
-    /*
-     * Borrowed from http://bit.ly/1jehGDZ
-     * and from http://bit.ly/1nGXUTn
-     */
-    var buffer1, buffer2;
+    var sim;
     var res = 25;
-    var separation = 25;
     function initPositions() {
-      buffer1 = [];
-      buffer2 = [];
-
-      // make l = (res ** 2 ) + 1 just to give a little buffer
-      for (var i = 0, l = res * res + 1; i < l; i++) {
-        buffer1[i] = buffer2[i] = 0;
-      }
+      sim = createRipple(res);
     }
-    
+
     function ripple(intersect) {
       if (typeof intersect != "undefined") {
         var vertex = intersect.face.a;
         var x = vertex % res;
         var y = Math.floor(vertex / res);
 
-        buffer1[x + (y * res)] += 10;
+        sim.disturb(x, y, 10);
       }
-
-      for (var i = 0, l = res * res; i < l; i++) {
-        // let's try making things wrap around
-        var left = (i % res) == 0 ? i - 1 + res : i - 1;
-        var right = ((i + 1) % res) == 0 ? i + 1 - res : i + 1;
-        var up = (i) < res ? i - res + l : i - res;
-        var down = (i) > (l - res) ? (i % res) + res : i + res;
-        buffer2[i] = (
-            (buffer1[left]
-              + buffer1[right]
-              + buffer1[up]
-              + buffer1[down])
-            / 2) - buffer2[i];
-        buffer1[i] += (buffer2[i] - buffer1[i]) * 0.5;
-        buffer1[i] *= 0.85;
-      }
-      var temp = buffer1;
-      buffer1 = buffer2;
-      buffer2 = temp;
+      sim.step();
     }
-
-    function updateVertices(geometry) {
-      for (var i = 0, l = geometry.vertices.length; i < l; i++) {
-        var vertex = geometry.vertices[i];
-        var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
-        vec.setLength(buffer2[i] + radius);
-        vertex.x = vec.x;
-        vertex.y = vec.y;
-        vertex.z = vec.z;
-      }
-      geometry.verticesNeedUpdate = true;
-    }
-
-
 
     function animate() {
       // this line contains the animation magic
@@ -107,47 +67,17 @@
     }
 
     function render() {
-      sphere.visible = false;
-      sphereMirror.updateCubeMap(renderer, scene);
-      sphere.visible = true;
+      mirrorSphere.updateReflection(renderer, scene);
       renderer.render(scene, camera);
       ripple(intersect);
-      updateVertices(sphere.geometry);
+      mirrorSphere.displace(sim.height);
     }
     
     function init() {
-      var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
-      var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 20000;
+      ({ renderer, scene, camera } = createStage($container));
 
-      if (Detector.webgl) {
-        renderer = new THREE.WebGLRenderer();
-      } else {
-        renderer = new THREE.CanvasRenderer();
-      }
-      renderer.setSize(WIDTH, HEIGHT);
-
-      scene = new THREE.Scene();
-    
-      camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-      camera.position.z = 300;
-
-      renderer.setSize(WIDTH, HEIGHT);
-
-      $container.append(renderer.domElement);
-
-      // Use helper WindowResize for this bit
-      THREEx.WindowResize(renderer, camera);
-
-      sphereMirror = new THREE.CubeCamera(0.1, 5000, 512);
-      scene.add(sphereMirror);
-      var sphereMirrorMaterial = new THREE.MeshBasicMaterial({ envMap: sphereMirror.renderTarget });
-
-      var segments = res, rings = res;
-      sphere = new THREE.Mesh(
-          new THREE.SphereGeometry(radius, segments, rings),
-          sphereMirrorMaterial);
-      sphereMirror.position.set(0, 0, 0);
-      sphereMirror.position = sphere.position;
+      mirrorSphere = createMirrorSphere(scene, radius, res);
+      sphere = mirrorSphere.mesh;
 
       targetList.push(sphere);
 
@@ -161,59 +91,25 @@
 
       scene.add(sphere);
 
-      /**
-       * Skybox stuff
-       * combine the 6 image (prefix + x/y/x + pos/neg)
-       * into a materialArray, which is the inside of our skybox
-       */
-      var imagePrefix = "img/dawnmountain-";
-      var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
-      var imageSuffix = ".png";
-
-      var materialArray = [];
-      for (var i = 0; i < 6; i++) {
-        materialArray.push( new THREE.MeshBasicMaterial({
-          map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
-          side: THREE.BackSide }));
-      }
-      var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
-
-      var skybox = new THREE.Mesh(
-          new THREE.BoxGeometry(10000,10000,10000),
-          skyMaterial
-          );
-      skybox.flipSided = true;
-      scene.add(skybox);
+      addSkybox(scene);
 
       // Set up mouse controls
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.addEventListener('change', render);
-
-      // Set up for handling mouse cliques
-      projector = new THREE.Projector();
+      controls = addOrbitControls(camera, renderer, render);
 
       initPositions();
-      document.addEventListener('mousedown', onDocumentMouseDown, false);
+
+      // Set up for handling mouse cliques
+      onClick(camera, targetList, function (hit) {
+        intersect = hit;
+      });
     }
 
-    /*
-     * totally borrowed this from:
-     * http://stemkoski.github.io/Three.js/Mouse-Click.html
-     */
-    function onDocumentMouseDown(event) {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-      var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-      projector.unprojectVector(vector, camera);
-      var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-
-      var intersections = ray.intersectObjects(targetList);
-      if (intersections.length > 0) {
-        intersect = intersections[0];
-      }
-    }
-    
     init();
+
+    // Module variables aren't globals, so expose what the smoke tests (and the
+    // devtools console) need to reach.
+    window.demo = { renderer, scene, camera, sphere };
+
     animate();
   </script>
 </html>
