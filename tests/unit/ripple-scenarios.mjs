@@ -2,8 +2,9 @@
 // record-ripple-fixture.mjs, which records the heights the test expects.
 import { createRipple } from '../../src/ripple.mjs';
 
-const RES = 25;
-const VERTICES = 676; // the sphere's vertex count, which the grid doesn't match
+// The grid the sphere uses: 25 columns around it, 26 rows pole to pole.
+const COLS = 25;
+const ROWS = 26;
 
 /**
  * @typedef {object} Scenario
@@ -18,24 +19,25 @@ const VERTICES = 676; // the sphere's vertex count, which the grid doesn't match
 export const scenarios = [
   { name: 'held click near the middle', x: 12, y: 12, frames: 30, held: true },
   { name: 'held click on the first vertex (wraps left and up)', x: 0, y: 0, frames: 30, held: true },
-  { name: 'held click on the last row (bottom-row rule)', x: 20, y: 24, frames: 30, held: true },
+  { name: 'held click on the last row (bottom-row rule)', x: 20, y: 25, frames: 30, held: true },
   { name: 'single impulse', x: 12, y: 12, frames: 30, held: false },
 ];
 
 /**
- * Run a scenario and return the height read for each sphere vertex, with
- * null where there is no height.
+ * Run a scenario and return the height of every grid cell, row by row.
  *
  * @param {Scenario} sc
- * @returns {(number | null)[]}
+ * @returns {number[]}
  */
 export function run(sc) {
-  const sim = createRipple(RES);
+  const sim = createRipple(COLS, ROWS);
   for (let f = 0; f < sc.frames; f++) {
     if (f === 0 || sc.held) sim.disturb(sc.x, sc.y, 10);
     sim.step();
   }
   const heights = [];
-  for (let i = 0; i < VERTICES; i++) heights.push(sim.height(i) ?? null);
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) heights.push(sim.height(x, y));
+  }
   return heights;
 }

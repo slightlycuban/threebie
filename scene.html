@@ -39,16 +39,13 @@
     var sim;
     var res = 25;
     function initPositions() {
-      sim = createRipple(res);
+      sim = createRipple(mirrorSphere.grid.cols, mirrorSphere.grid.rows);
     }
 
     function ripple(intersect) {
       if (typeof intersect != "undefined") {
-        var vertex = intersect.face.a;
-        var x = vertex % res;
-        var y = Math.floor(vertex / res);
-
-        sim.disturb(x, y, 10);
+        var cell = mirrorSphere.cellOf(intersect.face.a);
+        sim.disturb(cell.x, cell.y, 10);
       }
       sim.step();
     }
