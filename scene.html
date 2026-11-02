@@ -24,6 +24,7 @@
     import { createRipple } from './src/ripple.mjs';
     import { createStage, addSkybox, addOrbitControls } from './src/scene-setup.mjs';
     import { onClick } from './src/picking.mjs';
+    import { createMirrorSphere } from './src/mirror-sphere.mjs';
 
     var $container = $('#container');
     var renderer;
@@ -31,7 +32,7 @@
     var scene;
     var controls;
     var targetList = [];
-    var sphere, sphereMirror;
+    var mirrorSphere, sphere;
     var radius = 50;
     var intersect;
 
@@ -53,20 +54,6 @@
       sim.step();
     }
 
-    function updateVertices(geometry) {
-      for (var i = 0, l = geometry.vertices.length; i < l; i++) {
-        var vertex = geometry.vertices[i];
-        var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
-        vec.setLength(sim.height(i) + radius);
-        vertex.x = vec.x;
-        vertex.y = vec.y;
-        vertex.z = vec.z;
-      }
-      geometry.verticesNeedUpdate = true;
-    }
-
-
-
     function animate() {
       // this line contains the animation magic
       // and will call animate when the next frame is available
@@ -81,27 +68,17 @@
     }
 
     function render() {
-      sphere.visible = false;
-      sphereMirror.updateCubeMap(renderer, scene);
-      sphere.visible = true;
+      mirrorSphere.updateReflection(renderer, scene);
       renderer.render(scene, camera);
       ripple(intersect);
-      updateVertices(sphere.geometry);
+      mirrorSphere.displace(sim.height);
     }
     
     function init() {
       ({ renderer, scene, camera } = createStage($container));
 
-      sphereMirror = new THREE.CubeCamera(0.1, 5000, 512);
-      scene.add(sphereMirror);
-      var sphereMirrorMaterial = new THREE.MeshBasicMaterial({ envMap: sphereMirror.renderTarget });
-
-      var segments = res, rings = res;
-      sphere = new THREE.Mesh(
-          new THREE.SphereGeometry(radius, segments, rings),
-          sphereMirrorMaterial);
-      sphereMirror.position.set(0, 0, 0);
-      sphereMirror.position = sphere.position;
+      mirrorSphere = createMirrorSphere(scene, radius, res);
+      sphere = mirrorSphere.mesh;
 
       targetList.push(sphere);
 
