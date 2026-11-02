@@ -102,3 +102,34 @@ for (const demo of pages) {
     });
   });
 }
+
+test('orbiting the camera does not step the ripple', async ({ page }) => {
+  await page.clock.install({ time: 0 });
+  await page.clock.pauseAt(1000);
+
+  // Click the sphere, run 20 frames, and return the vertices. `between` runs
+  // after the first 10 frames; the frame count is the same either way.
+  async function rippleAfter(between) {
+    await page.goto('/scene.html', { waitUntil: 'networkidle' });
+    await stepFrames(page, 1);
+    await page.mouse.click(400, 300);
+    await stepFrames(page, 10);
+    await between();
+    await stepFrames(page, 10);
+    return (await readVertices(page, 'demo.sphere')).positions;
+  }
+
+  const still = await rippleAfter(async () => {});
+  const orbited = await rippleAfter(async () => {
+    const cameraAt = () => page.evaluate(() => window.demo.camera.position.toArray());
+    const from = await cameraAt();
+    // Start the drag off the sphere so it isn't also a click on it.
+    await page.mouse.move(50, 50);
+    await page.mouse.down();
+    await page.mouse.move(250, 50, { steps: 10 });
+    await page.mouse.up();
+    expect(await cameraAt(), 'the drag should orbit the camera').not.toEqual(from);
+  });
+
+  expect(orbited).toEqual(still);
+});
