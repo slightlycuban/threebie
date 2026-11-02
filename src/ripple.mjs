@@ -16,6 +16,10 @@
  *   Height at grid cell (x, y).
  */
 
+// Fraction of each cell's height kept per step. An impulse fades out over
+// about 4 seconds at 60 frames per second.
+var DAMPING = 0.97;
+
 /**
  * @param {number} cols Grid columns (x).
  * @param {number} rows Grid rows (y).
@@ -30,6 +34,8 @@ export function createRipple(cols, rows) {
     buffer1[i] = buffer2[i] = 0;
   }
 
+  // buffer1 holds the current heights, buffer2 the previous step's. Each step
+  // overwrites buffer2 with the next heights, then the two swap.
   return {
     disturb(x, y, amount) {
       buffer1[x + (y * cols)] += amount;
@@ -42,14 +48,12 @@ export function createRipple(cols, rows) {
         var right = ((i + 1) % cols) == 0 ? i + 1 - cols : i + 1;
         var up = (i) < cols ? i - cols + l : i - cols;
         var down = (i) > (l - cols) ? (i % cols) + cols : i + cols;
-        buffer2[i] = (
+        buffer2[i] = ((
             (buffer1[left]
               + buffer1[right]
               + buffer1[up]
               + buffer1[down])
-            / 2) - buffer2[i];
-        buffer1[i] += (buffer2[i] - buffer1[i]) * 0.5;
-        buffer1[i] *= 0.85;
+            / 2) - buffer2[i]) * DAMPING;
       }
       var temp = buffer1;
       buffer1 = buffer2;
@@ -57,7 +61,7 @@ export function createRipple(cols, rows) {
     },
 
     height(x, y) {
-      return buffer2[x + (y * cols)];
+      return buffer1[x + (y * cols)];
     },
   };
 }
