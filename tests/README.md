@@ -5,9 +5,11 @@ eye. They pin what each page renders and how the ripple moves, so any change in
 behavior shows up as a failing snapshot.
 
 ```sh
-npm test              # check against the snapshots
-npm run test:update   # re-record them after an intended change
-npm run record        # real-time video of each demo, in test-results/
+npm test                 # both of the below
+npm run test:unit        # ripple simulation, in Node
+npm run test:e2e         # the page in headless Chromium, against the snapshots
+npm run test:e2e:update  # re-record the snapshots after an intended change
+npm run record           # real-time video of each demo, in test-results/
 ```
 
 The snapshots record current behavior, known bugs included. A change meant to

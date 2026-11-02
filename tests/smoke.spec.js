@@ -7,7 +7,7 @@
 // the displaced vertices (a JSON snapshot plus a count of broken vertices).
 //
 // These snapshots pin *current* behavior, bugs included. A step that is meant
-// to change behavior updates them with `npm run test:update` in the same
+// to change behavior updates them with `npm run test:e2e:update` in the same
 // commit; a step that isn't must leave them untouched.
 const { test, expect } = require('@playwright/test');
 
