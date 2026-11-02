@@ -22,6 +22,7 @@
   </body>
   <script type="module">
     import { createRipple } from './src/ripple.mjs';
+    import { createStage, addSkybox, addOrbitControls } from './src/scene-setup.mjs';
 
     var $container = $('#container');
     var renderer;
@@ -90,27 +91,7 @@
     }
     
     function init() {
-      var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
-      var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 20000;
-
-      if (Detector.webgl) {
-        renderer = new THREE.WebGLRenderer();
-      } else {
-        renderer = new THREE.CanvasRenderer();
-      }
-      renderer.setSize(WIDTH, HEIGHT);
-
-      scene = new THREE.Scene();
-    
-      camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-      camera.position.z = 300;
-
-      renderer.setSize(WIDTH, HEIGHT);
-
-      $container.append(renderer.domElement);
-
-      // Use helper WindowResize for this bit
-      THREEx.WindowResize(renderer, camera);
+      ({ renderer, scene, camera } = createStage($container));
 
       sphereMirror = new THREE.CubeCamera(0.1, 5000, 512);
       scene.add(sphereMirror);
@@ -135,33 +116,10 @@
 
       scene.add(sphere);
 
-      /**
-       * Skybox stuff
-       * combine the 6 image (prefix + x/y/x + pos/neg)
-       * into a materialArray, which is the inside of our skybox
-       */
-      var imagePrefix = "img/dawnmountain-";
-      var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
-      var imageSuffix = ".png";
-
-      var materialArray = [];
-      for (var i = 0; i < 6; i++) {
-        materialArray.push( new THREE.MeshBasicMaterial({
-          map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
-          side: THREE.BackSide }));
-      }
-      var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
-
-      var skybox = new THREE.Mesh(
-          new THREE.BoxGeometry(10000,10000,10000),
-          skyMaterial
-          );
-      skybox.flipSided = true;
-      scene.add(skybox);
+      addSkybox(scene);
 
       // Set up mouse controls
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.addEventListener('change', render);
+      controls = addOrbitControls(camera, renderer, render);
 
       // Set up for handling mouse cliques
       projector = new THREE.Projector();
