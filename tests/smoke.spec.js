@@ -19,7 +19,7 @@ const pages = [
     file: 'scene.html',
     // The sphere sits in the middle of the view.
     clickAt: { x: 400, y: 300 },
-    meshExpr: 'sphere',
+    meshExpr: 'demo.sphere',
   },
 ];
 
@@ -59,6 +59,7 @@ async function stepFrames(page, n) {
  */
 async function canvasPng(page) {
   const dataUrl = await page.evaluate(() => {
+    const { renderer, scene, camera } = window.demo;
     renderer.render(scene, camera);
     return renderer.domElement.toDataURL('image/png');
   });

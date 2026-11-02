@@ -20,7 +20,7 @@
   <body>
     <div id='container'></div>
   </body>
-  <script>
+  <script type="module">
     var $container = $('#container');
     var renderer;
     var camera;
@@ -214,6 +214,11 @@
     }
     
     init();
+
+    // Module variables aren't globals, so expose what the smoke tests (and the
+    // devtools console) need to reach.
+    window.demo = { renderer, scene, camera, sphere };
+
     animate();
   </script>
 </html>
