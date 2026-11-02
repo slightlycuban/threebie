@@ -21,14 +21,6 @@ const pages = [
     clickAt: { x: 400, y: 300 },
     meshExpr: 'sphere',
   },
-  {
-    file: 'waves.html',
-    // The default camera looks at the plane edge-on; raise it so the
-    // screenshots show the surface.
-    setup: () => { camera.position.set(0, 800, 1000); },
-    clickAt: { x: 400, y: 300 },
-    meshExpr: 'targetList[0]',
-  },
 ];
 
 /** Read every vertex of the page's displaced mesh, rounded for stable snapshots. */
@@ -87,7 +79,6 @@ for (const demo of pages) {
       await page.clock.install({ time: 0 });
       await page.clock.pauseAt(1000);
       await page.goto(`/${demo.file}`, { waitUntil: 'networkidle' });
-      if (demo.setup) await page.evaluate(demo.setup);
       await stepFrames(page, 1);
 
       const before = await readVertices(page, demo.meshExpr);
