@@ -23,14 +23,13 @@
   <script type="module">
     import { createRipple } from './src/ripple.mjs';
     import { createStage, addSkybox, addOrbitControls } from './src/scene-setup.mjs';
+    import { onClick } from './src/picking.mjs';
 
     var $container = $('#container');
     var renderer;
     var camera;
     var scene;
     var controls;
-    var projector;
-    var mouse = { x: 0, y: 0 };
     var targetList = [];
     var sphere, sphereMirror;
     var radius = 50;
@@ -121,30 +120,14 @@
       // Set up mouse controls
       controls = addOrbitControls(camera, renderer, render);
 
-      // Set up for handling mouse cliques
-      projector = new THREE.Projector();
-
       initPositions();
-      document.addEventListener('mousedown', onDocumentMouseDown, false);
+
+      // Set up for handling mouse cliques
+      onClick(camera, targetList, function (hit) {
+        intersect = hit;
+      });
     }
 
-    /*
-     * totally borrowed this from:
-     * http://stemkoski.github.io/Three.js/Mouse-Click.html
-     */
-    function onDocumentMouseDown(event) {
-      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-      var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-      projector.unprojectVector(vector, camera);
-      var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-
-      var intersections = ray.intersectObjects(targetList);
-      if (intersections.length > 0) {
-        intersect = intersections[0];
-      }
-    }
-    
     init();
 
     // Module variables aren't globals, so expose what the smoke tests (and the
