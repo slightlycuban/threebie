@@ -133,3 +133,18 @@ test('orbiting the camera does not step the ripple', async ({ page }) => {
 
   expect(orbited).toEqual(still);
 });
+
+test('a click is a single impulse that dies out', async ({ page }) => {
+  await page.clock.install({ time: 0 });
+  await page.clock.pauseAt(1000);
+  await page.goto('/scene.html', { waitUntil: 'networkidle' });
+  await stepFrames(page, 1);
+  await page.mouse.click(400, 300);
+  await stepFrames(page, 400);
+
+  // The sphere's radius is 50; once the ripple has died out, every vertex is
+  // back on it.
+  const { positions } = await readVertices(page, 'demo.sphere');
+  const offsets = positions.map((p) => Math.abs(Math.hypot(...p) - 50));
+  expect(Math.max(...offsets)).toBeLessThan(0.1);
+});

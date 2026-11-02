@@ -42,10 +42,12 @@
       sim = createRipple(mirrorSphere.grid.cols, mirrorSphere.grid.rows);
     }
 
-    function ripple(intersect) {
+    function ripple() {
       if (typeof intersect != "undefined") {
         var cell = mirrorSphere.cellOf(intersect.face.a);
         sim.disturb(cell.x, cell.y, 10);
+        // A click disturbs the surface once; the ripple carries on from there.
+        intersect = undefined;
       }
       sim.step();
     }
@@ -66,7 +68,7 @@
     function render() {
       mirrorSphere.updateReflection(renderer, scene);
       renderer.render(scene, camera);
-      ripple(intersect);
+      ripple();
       mirrorSphere.displace(sim.height);
     }
     
