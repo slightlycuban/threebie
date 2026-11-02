@@ -39,3 +39,24 @@ test('a lone impulse dies out', () => {
   }
   assert.ok(peak < 0.01, `peak height after 600 steps is ${peak}`);
 });
+
+test('columns wrap around: the first column neighbors the last', () => {
+  const sim = createRipple(9, 9);
+  sim.disturb(0, 4, 10);
+  sim.step();
+  assert.deepEqual(disturbedCells(sim, 9, 9), ['0,3', '1,4', '8,4', '0,5']);
+});
+
+test('rows do not wrap: past the first row is the cell itself', () => {
+  const sim = createRipple(9, 9);
+  sim.disturb(4, 0, 10);
+  sim.step();
+  assert.deepEqual(disturbedCells(sim, 9, 9), ['3,0', '4,0', '5,0', '4,1']);
+});
+
+test('rows do not wrap: past the last row is the cell itself', () => {
+  const sim = createRipple(9, 9);
+  sim.disturb(4, 8, 10);
+  sim.step();
+  assert.deepEqual(disturbedCells(sim, 9, 9), ['4,7', '3,8', '4,8', '5,8']);
+});

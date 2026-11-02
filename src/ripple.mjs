@@ -29,8 +29,7 @@ export function createRipple(cols, rows) {
   var buffer1 = [];
   var buffer2 = [];
 
-  // make l = (cols * rows) + 1 just to give a little buffer
-  for (var i = 0, l = cols * rows + 1; i < l; i++) {
+  for (var i = 0, l = cols * rows; i < l; i++) {
     buffer1[i] = buffer2[i] = 0;
   }
 
@@ -43,11 +42,13 @@ export function createRipple(cols, rows) {
 
     step() {
       for (var i = 0, l = cols * rows; i < l; i++) {
-        // let's try making things wrap around
+        // Columns wrap around (x is longitude). Rows don't: the first and
+        // last rows are the poles, so the neighbor past a pole is the cell
+        // itself.
         var left = (i % cols) == 0 ? i - 1 + cols : i - 1;
         var right = ((i + 1) % cols) == 0 ? i + 1 - cols : i + 1;
-        var up = (i) < cols ? i - cols + l : i - cols;
-        var down = (i) > (l - cols) ? (i % cols) + cols : i + cols;
+        var up = i < cols ? i : i - cols;
+        var down = i >= l - cols ? i : i + cols;
         buffer2[i] = ((
             (buffer1[left]
               + buffer1[right]

@@ -18,8 +18,8 @@ const ROWS = 26;
 /** @type {Scenario[]} */
 export const scenarios = [
   { name: 'held click near the middle', x: 12, y: 12, frames: 30, held: true },
-  { name: 'held click on the first vertex (wraps left and up)', x: 0, y: 0, frames: 30, held: true },
-  { name: 'held click on the last row (bottom-row rule)', x: 20, y: 25, frames: 30, held: true },
+  { name: 'held click on the first cell (wraps left; top edge)', x: 0, y: 0, frames: 30, held: true },
+  { name: 'held click on the last row (bottom edge)', x: 20, y: 25, frames: 30, held: true },
   { name: 'single impulse', x: 12, y: 12, frames: 30, held: false },
 ];
 
