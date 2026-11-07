@@ -134,6 +134,19 @@ test('orbiting the camera does not step the ripple', async ({ page }) => {
   expect(orbited).toEqual(still);
 });
 
+test('resizing the window resizes the canvas and camera', async ({ page }) => {
+  await page.goto('/scene.html', { waitUntil: 'networkidle' });
+  await page.setViewportSize({ width: 640, height: 320 });
+  // The resize event can land after setViewportSize returns.
+  await expect.poll(() => page.evaluate(() => {
+    const { renderer, camera } = window.demo;
+    return {
+      canvas: [renderer.domElement.width, renderer.domElement.height],
+      aspect: camera.aspect,
+    };
+  })).toEqual({ canvas: [640, 320], aspect: 2 });
+});
+
 test('a click is a single impulse that dies out', async ({ page }) => {
   await page.clock.install({ time: 0 });
   await page.clock.pauseAt(1000);
