@@ -21,7 +21,8 @@ module.exports = defineConfig({
     },
   },
   webServer: {
-    command: `node tests/serve.mjs ${PORT}`,
+    // The built-site test needs a fresh dist/.
+    command: `npm run build && node tests/serve.mjs ${PORT}`,
     url: `http://127.0.0.1:${PORT}/scene.html`,
     reuseExistingServer: true,
   },

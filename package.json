@@ -4,6 +4,7 @@
   "description": "THREE.js experiments: a rippling mirror sphere",
   "scripts": {
     "serve": "node tests/serve.mjs",
+    "build": "node scripts/build.mjs",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "node --test \"tests/unit/*.test.mjs\"",
     "test:unit:update": "node tests/unit/record-ripple-fixture.mjs",

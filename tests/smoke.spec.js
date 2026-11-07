@@ -107,6 +107,25 @@ for (const demo of pages) {
   });
 }
 
+test('the built site renders the same first frame as scene.html', async ({ page }) => {
+  const problems = [];
+  page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
+  page.on('console', (m) => {
+    if (m.type() === 'error' || m.type() === 'warning') problems.push(`${m.type()}: ${m.text()}`);
+  });
+  page.on('response', (r) => {
+    if (r.status() >= 400) problems.push(`${r.status()}: ${r.url()}`);
+  });
+
+  await page.clock.install({ time: 0 });
+  await page.clock.pauseAt(1000);
+  await page.goto('/dist/index.html', { waitUntil: 'networkidle' });
+  await stepFrames(page, 1);
+
+  expect(await canvasPng(page)).toMatchSnapshot('scene.html-initial.png');
+  expect(problems, 'console errors/warnings and failed requests').toEqual([]);
+});
+
 test('orbiting the camera does not step the ripple', async ({ page }) => {
   await page.clock.install({ time: 0 });
   await page.clock.pauseAt(1000);
