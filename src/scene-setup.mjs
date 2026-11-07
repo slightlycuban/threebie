@@ -1,22 +1,18 @@
-// Renderer, scene, camera, skybox and mouse controls. Uses the global THREE,
-// Detector, THREEx and OrbitControls scripts that the page loads first.
+// Renderer, scene, camera, skybox and mouse controls.
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 /**
- * Create the renderer, scene and camera, and add the canvas to $container.
+ * Create the renderer, scene and camera, and add the canvas to container.
  *
- * @param {JQuery} $container Element the canvas is appended to.
+ * @param {HTMLElement} container Element the canvas is appended to.
  * @returns {{ renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera }}
  */
-export function createStage($container) {
+export function createStage(container) {
   var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
   var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 20000;
-  var renderer;
-
-  if (Detector.webgl) {
-    renderer = new THREE.WebGLRenderer();
-  } else {
-    renderer = new THREE.CanvasRenderer();
-  }
+  var renderer = new THREE.WebGLRenderer();
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(WIDTH, HEIGHT);
 
   var scene = new THREE.Scene();
@@ -24,10 +20,14 @@ export function createStage($container) {
   var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
   camera.position.z = 300;
 
-  $container.append(renderer.domElement);
+  container.appendChild(renderer.domElement);
 
-  // Use helper WindowResize for this bit
-  THREEx.WindowResize(renderer, camera);
+  // Keep the canvas filling the window.
+  window.addEventListener('resize', function () {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  });
 
   return { renderer, scene, camera };
 }
@@ -38,28 +38,24 @@ export function createStage($container) {
  * @param {THREE.Scene} scene
  */
 export function addSkybox(scene) {
-  /**
-   * Skybox stuff
-   * combine the 6 image (prefix + x/y/x + pos/neg)
-   * into a materialArray, which is the inside of our skybox
-   */
   var imagePrefix = "img/dawnmountain-";
   var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
   var imageSuffix = ".png";
 
+  // One material per face of a big box, seen from inside. (A cube texture
+  // as scene.background would show the images mirrored left to right.)
+  var loader = new THREE.TextureLoader();
   var materialArray = [];
   for (var i = 0; i < 6; i++) {
-    materialArray.push( new THREE.MeshBasicMaterial({
-      map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
-      side: THREE.BackSide }));
+    var texture = loader.load(imagePrefix + directions[i] + imageSuffix);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    materialArray.push(new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide }));
   }
-  var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
 
   var skybox = new THREE.Mesh(
-      new THREE.BoxGeometry(10000,10000,10000),
-      skyMaterial
+      new THREE.BoxGeometry(10000, 10000, 10000),
+      materialArray
       );
-  skybox.flipSided = true;
   scene.add(skybox);
 }
 
@@ -69,8 +65,8 @@ export function addSkybox(scene) {
  *
  * @param {THREE.PerspectiveCamera} camera
  * @param {THREE.WebGLRenderer} renderer Its canvas receives the mouse events.
- * @returns {THREE.OrbitControls}
+ * @returns {OrbitControls}
  */
 export function addOrbitControls(camera, renderer) {
-  return new THREE.OrbitControls(camera, renderer.domElement);
+  return new OrbitControls(camera, renderer.domElement);
 }

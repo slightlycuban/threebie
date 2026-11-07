@@ -1,5 +1,6 @@
 // Mouse-click picking: turn a mousedown into the first intersection with one
 // of the target meshes.
+import * as THREE from 'three';
 
 /*
  * totally borrowed this from:
@@ -15,17 +16,15 @@
  * @param {(hit: THREE.Intersection) => void} onHit
  */
 export function onClick(camera, targetList, onHit) {
-  var projector = new THREE.Projector();
-  var mouse = { x: 0, y: 0 };
+  var raycaster = new THREE.Raycaster();
+  var mouse = new THREE.Vector2();
 
   function onDocumentMouseDown(event) {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-    var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-    projector.unprojectVector(vector, camera);
-    var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+    raycaster.setFromCamera(mouse, camera);
 
-    var intersections = ray.intersectObjects(targetList);
+    var intersections = raycaster.intersectObjects(targetList);
     if (intersections.length > 0) {
       onHit(intersections[0]);
     }

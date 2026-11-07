@@ -29,7 +29,11 @@ async function readVertices(page, meshExpr) {
     // eslint-disable-next-line no-eval
     const mesh = (0, eval)(expr);
     const round = (n) => (Number.isFinite(n) ? Math.round(n * 1000) / 1000 : String(n));
-    const vertices = mesh.geometry.vertices;
+    const position = mesh.geometry.attributes.position;
+    const vertices = [];
+    for (let i = 0; i < position.count; i++) {
+      vertices.push({ x: position.getX(i), y: position.getY(i), z: position.getZ(i) });
+    }
     let nonFinite = 0;
     let collapsed = 0;
     for (const v of vertices) {
@@ -132,6 +136,19 @@ test('orbiting the camera does not step the ripple', async ({ page }) => {
   });
 
   expect(orbited).toEqual(still);
+});
+
+test('resizing the window resizes the canvas and camera', async ({ page }) => {
+  await page.goto('/scene.html', { waitUntil: 'networkidle' });
+  await page.setViewportSize({ width: 640, height: 320 });
+  // The resize event can land after setViewportSize returns.
+  await expect.poll(() => page.evaluate(() => {
+    const { renderer, camera } = window.demo;
+    return {
+      canvas: [renderer.domElement.width, renderer.domElement.height],
+      aspect: camera.aspect,
+    };
+  })).toEqual({ canvas: [640, 320], aspect: 2 });
 });
 
 test('a click is a single impulse that dies out', async ({ page }) => {
