@@ -39,3 +39,57 @@ jobs:
           name: test-results
           path: test-results/
           retention-days: 7
+
+  # Only a push to master publishes. Other runs dry-run the push, which
+  # still checks that the token may write to gh-pages.
+  deploy:
+    needs: smoke
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.58.2-noble
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Disable git://
+        run: git config --global protocol.git.allow never
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build
+        run: npm run build
+
+      - name: Commit dist/ onto gh-pages
+        id: commit
+        run: |
+          export GIT_AUTHOR_NAME="$(git log -1 --format=%an)"
+          export GIT_AUTHOR_EMAIL="$(git log -1 --format=%ae)"
+          export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+          export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+          source=$(git rev-parse HEAD)
+
+          git fetch --no-tags --depth=1 origin gh-pages
+          git worktree add --detach site FETCH_HEAD
+          cd site
+          git rm -rq --ignore-unmatch .
+          cp -R ../dist/. .
+          git add -A
+          if git diff --cached --quiet; then
+            echo "gh-pages already matches this build"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -q -m "Deploy ${source}"
+            git show --stat --format='%h %an <%ae>%n%s' HEAD
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push gh-pages
+        if: steps.commit.outputs.changed == 'true'
+        working-directory: site
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/master ]; then
+            git push origin HEAD:refs/heads/gh-pages
+          else
+            git push --dry-run origin HEAD:refs/heads/gh-pages
+          fi
