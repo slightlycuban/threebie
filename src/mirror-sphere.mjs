@@ -1,5 +1,6 @@
 // The mirror sphere: a sphere mesh whose material reflects a cube camera at
 // its center, displaced radially by a height for each vertex.
+import * as THREE from 'three';
 
 /**
  * @typedef {object} MirrorSphere
@@ -27,16 +28,16 @@
  * @returns {MirrorSphere}
  */
 export function createMirrorSphere(scene, radius, res) {
-  var sphereMirror = new THREE.CubeCamera(0.1, 5000, 512);
+  var cubeRenderTarget = new THREE.WebGLCubeRenderTarget(512);
+  var sphereMirror = new THREE.CubeCamera(0.1, 5000, cubeRenderTarget);
   scene.add(sphereMirror);
-  var sphereMirrorMaterial = new THREE.MeshBasicMaterial({ envMap: sphereMirror.renderTarget });
+  var sphereMirrorMaterial = new THREE.MeshBasicMaterial({ envMap: cubeRenderTarget.texture });
 
   var segments = res, rings = res;
   var sphere = new THREE.Mesh(
       new THREE.SphereGeometry(radius, segments, rings),
       sphereMirrorMaterial);
-  sphereMirror.position.set(0, 0, 0);
-  sphereMirror.position = sphere.position;
+  sphereMirror.position.copy(sphere.position);
 
   // SphereGeometry lays out (rings + 1) rows of (segments + 1) vertices, from
   // the north pole (row 0) to the south pole. The last vertex of each row
@@ -64,7 +65,7 @@ export function createMirrorSphere(scene, radius, res) {
      */
     updateReflection(renderer, scene) {
       sphere.visible = false;
-      sphereMirror.updateCubeMap(renderer, scene);
+      sphereMirror.update(renderer, scene);
       sphere.visible = true;
     },
 
@@ -79,20 +80,17 @@ export function createMirrorSphere(scene, radius, res) {
       var north = rowAverage(0);
       var south = rowAverage(rows - 1);
 
-      var geometry = sphere.geometry;
-      for (var i = 0, l = geometry.vertices.length; i < l; i++) {
+      var positions = sphere.geometry.attributes.position;
+      var vertex = new THREE.Vector3();
+      for (var i = 0, l = positions.count; i < l; i++) {
         var cell = cellOf(i);
         var h = cell.y === 0 ? north
           : cell.y === rows - 1 ? south
           : height(cell.x, cell.y);
-        var vertex = geometry.vertices[i];
-        var vec = new THREE.Vector3(vertex.x, vertex.y, vertex.z);
-        vec.setLength(h + radius);
-        vertex.x = vec.x;
-        vertex.y = vec.y;
-        vertex.z = vec.z;
+        vertex.fromBufferAttribute(positions, i).setLength(h + radius);
+        positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
       }
-      geometry.verticesNeedUpdate = true;
+      positions.needsUpdate = true;
     },
   };
 }

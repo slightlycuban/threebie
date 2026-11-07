@@ -3,8 +3,14 @@
   <head>
     <meta charset="utf-8">
     <title>THREE.js</title>
-    <script src='js/three.min.js'></script>
-    <script src="js/OrbitControls.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./node_modules/three/build/three.module.js",
+          "three/addons/": "./node_modules/three/examples/jsm/"
+        }
+      }
+    </script>
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <style>
       * {
@@ -18,6 +24,7 @@
     <div id='container'></div>
   </body>
   <script type="module">
+    import * as THREE from 'three';
     import { createRipple } from './src/ripple.mjs';
     import { createStage, addSkybox, addOrbitControls } from './src/scene-setup.mjs';
     import { onClick } from './src/picking.mjs';

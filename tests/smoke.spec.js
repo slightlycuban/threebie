@@ -29,7 +29,11 @@ async function readVertices(page, meshExpr) {
     // eslint-disable-next-line no-eval
     const mesh = (0, eval)(expr);
     const round = (n) => (Number.isFinite(n) ? Math.round(n * 1000) / 1000 : String(n));
-    const vertices = mesh.geometry.vertices;
+    const position = mesh.geometry.attributes.position;
+    const vertices = [];
+    for (let i = 0; i < position.count; i++) {
+      vertices.push({ x: position.getX(i), y: position.getY(i), z: position.getZ(i) });
+    }
     let nonFinite = 0;
     let collapsed = 0;
     for (const v of vertices) {
