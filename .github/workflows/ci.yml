@@ -44,6 +44,9 @@ jobs:
   # still checks that the token may write to gh-pages.
   deploy:
     needs: smoke
+    # Gitea's push mirror carries gh-pages to GitHub; a deploy there would
+    # only be overwritten by the next sync.
+    if: github.server_url != 'https://github.com'
     runs-on: ubuntu-latest
     container: mcr.microsoft.com/playwright:v1.58.2-noble
     permissions:
