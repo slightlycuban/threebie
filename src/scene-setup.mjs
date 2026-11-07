@@ -2,12 +2,12 @@
 // Detector, THREEx and OrbitControls scripts that the page loads first.
 
 /**
- * Create the renderer, scene and camera, and add the canvas to $container.
+ * Create the renderer, scene and camera, and add the canvas to container.
  *
- * @param {JQuery} $container Element the canvas is appended to.
+ * @param {HTMLElement} container Element the canvas is appended to.
  * @returns {{ renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera }}
  */
-export function createStage($container) {
+export function createStage(container) {
   var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
   var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 20000;
   var renderer;
@@ -24,7 +24,7 @@ export function createStage($container) {
   var camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
   camera.position.z = 300;
 
-  $container.append(renderer.domElement);
+  container.appendChild(renderer.domElement);
 
   // Use helper WindowResize for this bit
   THREEx.WindowResize(renderer, camera);

@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <title>THREE.js</title>
-    <script src='js/jquery.min.js'></script>
     <script src='js/three.min.js'></script>
     <script src="js/Detector.js"></script>
     <script src="js/OrbitControls.js"></script>
@@ -26,7 +25,7 @@
     import { onClick } from './src/picking.mjs';
     import { createMirrorSphere } from './src/mirror-sphere.mjs';
 
-    var $container = $('#container');
+    var container = document.getElementById('container');
     var renderer;
     var camera;
     var scene;
@@ -73,7 +72,7 @@
     }
     
     function init() {
-      ({ renderer, scene, camera } = createStage($container));
+      ({ renderer, scene, camera } = createStage(container));
 
       mirrorSphere = createMirrorSphere(scene, radius, res);
       sphere = mirrorSphere.mesh;
