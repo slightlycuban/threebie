@@ -14,8 +14,9 @@ import * as THREE from 'three';
  * @property {(renderer: THREE.WebGLRenderer, scene: THREE.Scene) => void} updateReflection
  *   Re-render the reflection from the sphere's center, without the sphere.
  * @property {(height: (x: number, y: number) => number) => void} displace
- *   Move each vertex to radius + the height of its grid cell from the center.
- *   Each pole takes the average of its row, so it stays a single point.
+ *   Move each vertex to radius + the height of its grid cell from the center,
+ *   and update the normals to match, so the reflection ripples too. Each pole
+ *   takes the average of its row, so it stays a single point.
  */
 
 /**
@@ -54,6 +55,54 @@ export function createMirrorSphere(scene, radius, res) {
     };
   }
 
+  var positions = sphere.geometry.attributes.position;
+  var normals = sphere.geometry.attributes.normal;
+  var a = new THREE.Vector3(), b = new THREE.Vector3();
+  var c = new THREE.Vector3(), n = new THREE.Vector3();
+
+  // x wraps around the seam.
+  function pointAt(x, y, target) {
+    return target.fromBufferAttribute(positions, y * verticesPerRow + (x + cols) % cols);
+  }
+
+  function setNormal(vertex, normal) {
+    normals.setXYZ(vertex, normal.x, normal.y, normal.z);
+  }
+
+  // The normal of the pole in row y, summed over the triangle fan between it
+  // and the next row toward the equator. Seen from outside, the fan winds the
+  // other way at the south pole.
+  function poleNormal(y, ring, target) {
+    target.set(0, 0, 0);
+    pointAt(0, y, c);
+    for (var x = 0; x < cols; x++) {
+      pointAt(x, ring, a).sub(c);
+      pointAt(x + 1, ring, b).sub(c);
+      target.add(y === 0 ? a.cross(b) : b.cross(a));
+    }
+    return target.normalize();
+  }
+
+  // Normals come from the grid rather than computeVertexNormals(), which
+  // would treat the seam's two copies of a vertex, and each pole's row of
+  // copies, as separate points with different normals.
+  function updateNormals() {
+    for (var y = 1; y < rows - 1; y++) {
+      for (var x = 0; x < cols; x++) {
+        pointAt(x + 1, y, a).sub(pointAt(x - 1, y, c));
+        pointAt(x, y + 1, b).sub(pointAt(x, y - 1, c));
+        n.crossVectors(b, a).normalize();
+        setNormal(y * verticesPerRow + x, n);
+        if (x === 0) setNormal(y * verticesPerRow + cols, n);
+      }
+    }
+    for (var pole of [[0, 1], [rows - 1, rows - 2]]) {
+      poleNormal(pole[0], pole[1], n);
+      for (var x = 0; x < verticesPerRow; x++) setNormal(pole[0] * verticesPerRow + x, n);
+    }
+    normals.needsUpdate = true;
+  }
+
   return {
     mesh: sphere,
     grid: { cols: cols, rows: rows },
@@ -80,7 +129,6 @@ export function createMirrorSphere(scene, radius, res) {
       var north = rowAverage(0);
       var south = rowAverage(rows - 1);
 
-      var positions = sphere.geometry.attributes.position;
       var vertex = new THREE.Vector3();
       for (var i = 0, l = positions.count; i < l; i++) {
         var cell = cellOf(i);
@@ -91,6 +139,7 @@ export function createMirrorSphere(scene, radius, res) {
         positions.setXYZ(i, vertex.x, vertex.y, vertex.z);
       }
       positions.needsUpdate = true;
+      updateNormals();
     },
   };
 }
