@@ -1,6 +1,7 @@
 /*
- * Two-buffer ripple simulation on a res-by-res grid of heights. It has no
- * three.js dependency; a surface reads height(i) for each of its vertices.
+ * Two-buffer ripple simulation on a cols-by-rows grid of heights. It has no
+ * three.js dependency; a surface maps each of its vertices to a grid cell and
+ * reads that cell's height.
  *
  * Borrowed from http://bit.ly/1jehGDZ
  * and from http://bit.ly/1nGXUTn
@@ -11,51 +12,57 @@
  * @property {(x: number, y: number, amount: number) => void} disturb
  *   Add `amount` to the height at grid cell (x, y).
  * @property {() => void} step Advance the simulation by one frame.
- * @property {(i: number) => number} height
- *   Height at grid index i (row-major, `x + y * res`).
+ * @property {(x: number, y: number) => number} height
+ *   Height at grid cell (x, y).
  */
 
+// Fraction of each cell's height kept per step. An impulse fades out over
+// about 4 seconds at 60 frames per second.
+var DAMPING = 0.97;
+
 /**
- * @param {number} res Grid cells per side.
+ * @param {number} cols Grid columns (x).
+ * @param {number} rows Grid rows (y).
  * @returns {Ripple}
  */
-export function createRipple(res) {
+export function createRipple(cols, rows) {
   var buffer1 = [];
   var buffer2 = [];
 
-  // make l = (res ** 2 ) + 1 just to give a little buffer
-  for (var i = 0, l = res * res + 1; i < l; i++) {
+  for (var i = 0, l = cols * rows; i < l; i++) {
     buffer1[i] = buffer2[i] = 0;
   }
 
+  // buffer1 holds the current heights, buffer2 the previous step's. Each step
+  // overwrites buffer2 with the next heights, then the two swap.
   return {
     disturb(x, y, amount) {
-      buffer1[x + (y * res)] += amount;
+      buffer1[x + (y * cols)] += amount;
     },
 
     step() {
-      for (var i = 0, l = res * res; i < l; i++) {
-        // let's try making things wrap around
-        var left = (i % res) == 0 ? i - 1 + res : i - 1;
-        var right = ((i + 1) % res) == 0 ? i + 1 - res : i + 1;
-        var up = (i) < res ? i - res + l : i - res;
-        var down = (i) > (l - res) ? (i % res) + res : i + res;
-        buffer2[i] = (
+      for (var i = 0, l = cols * rows; i < l; i++) {
+        // Columns wrap around (x is longitude). Rows don't: the first and
+        // last rows are the poles, so the neighbor past a pole is the cell
+        // itself.
+        var left = (i % cols) == 0 ? i - 1 + cols : i - 1;
+        var right = ((i + 1) % cols) == 0 ? i + 1 - cols : i + 1;
+        var up = i < cols ? i : i - cols;
+        var down = i >= l - cols ? i : i + cols;
+        buffer2[i] = ((
             (buffer1[left]
               + buffer1[right]
               + buffer1[up]
               + buffer1[down])
-            / 2) - buffer2[i];
-        buffer1[i] += (buffer2[i] - buffer1[i]) * 0.5;
-        buffer1[i] *= 0.85;
+            / 2) - buffer2[i]) * DAMPING;
       }
       var temp = buffer1;
       buffer1 = buffer2;
       buffer2 = temp;
     },
 
-    height(i) {
-      return buffer2[i];
+    height(x, y) {
+      return buffer1[x + (y * cols)];
     },
   };
 }

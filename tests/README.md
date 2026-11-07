@@ -7,6 +7,7 @@ behavior shows up as a failing snapshot.
 ```sh
 npm test                 # both of the below
 npm run test:unit        # ripple simulation, in Node
+npm run test:unit:update # re-record its expected heights after an intended change
 npm run test:e2e         # the page in headless Chromium, against the snapshots
 npm run test:e2e:update  # re-record the snapshots after an intended change
 npm run record           # real-time video of each demo, in test-results/

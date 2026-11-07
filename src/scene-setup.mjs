@@ -64,15 +64,13 @@ export function addSkybox(scene) {
 }
 
 /**
- * Orbit the camera with the mouse.
+ * Orbit the camera with the mouse. The caller's animation loop must call
+ * controls.update() and render every frame.
  *
  * @param {THREE.PerspectiveCamera} camera
  * @param {THREE.WebGLRenderer} renderer Its canvas receives the mouse events.
- * @param {() => void} onChange Runs whenever the view moves.
  * @returns {THREE.OrbitControls}
  */
-export function addOrbitControls(camera, renderer, onChange) {
-  var controls = new THREE.OrbitControls(camera, renderer.domElement);
-  controls.addEventListener('change', onChange);
-  return controls;
+export function addOrbitControls(camera, renderer) {
+  return new THREE.OrbitControls(camera, renderer.domElement);
 }
