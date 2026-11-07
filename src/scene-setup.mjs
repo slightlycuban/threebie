@@ -1,5 +1,5 @@
-// Renderer, scene, camera, skybox and mouse controls. Uses the global THREE,
-// Detector and OrbitControls scripts that the page loads first.
+// Renderer, scene, camera, skybox and mouse controls. Uses the global THREE
+// and OrbitControls scripts that the page loads first.
 
 /**
  * Create the renderer, scene and camera, and add the canvas to container.
@@ -10,13 +10,7 @@
 export function createStage(container) {
   var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
   var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 0.1, FAR = 20000;
-  var renderer;
-
-  if (Detector.webgl) {
-    renderer = new THREE.WebGLRenderer();
-  } else {
-    renderer = new THREE.CanvasRenderer();
-  }
+  var renderer = new THREE.WebGLRenderer();
   renderer.setSize(WIDTH, HEIGHT);
 
   var scene = new THREE.Scene();
