@@ -49,7 +49,9 @@
     function ripple() {
       if (typeof intersect != "undefined") {
         var cell = mirrorSphere.cellOf(intersect.face.a);
-        sim.disturb(cell.x, cell.y, 10);
+        // Enough to see in the reflection; much more and the 25-segment
+        // mesh turns jagged.
+        sim.disturb(cell.x, cell.y, 25);
         // A click disturbs the surface once; the ripple carries on from there.
         intersect = undefined;
       }
