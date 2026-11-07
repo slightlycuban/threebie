@@ -1,5 +1,5 @@
 // Renderer, scene, camera, skybox and mouse controls. Uses the global THREE,
-// Detector, THREEx and OrbitControls scripts that the page loads first.
+// Detector and OrbitControls scripts that the page loads first.
 
 /**
  * Create the renderer, scene and camera, and add the canvas to container.
@@ -26,8 +26,12 @@ export function createStage(container) {
 
   container.appendChild(renderer.domElement);
 
-  // Use helper WindowResize for this bit
-  THREEx.WindowResize(renderer, camera);
+  // Keep the canvas filling the window.
+  window.addEventListener('resize', function () {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  });
 
   return { renderer, scene, camera };
 }
